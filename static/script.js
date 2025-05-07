@@ -4,6 +4,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusArea = document.getElementById('statusArea');
     const resultsList = document.getElementById('resultsList');
 
+    const loadingGifContainer = document.getElementById('loadingGifContainer');
+    const loadingGifImage = document.getElementById('loadingGif');
+    const gifUrls = [
+        "https://c.tenor.com/aAzr2xbOK-EAAAAd/tenor.gif",
+        "https://media.tenor.com/FF5STjI711cAAAAj/anthony-fantano-ant-cube.gif",
+        "https://c.tenor.com/Y1cFztN5CZwAAAAd/tenor.gif",
+        "https://i.giphy.com/JlpguxhuxwHiqKXoW7.webp",
+        "https://c.tenor.com/Dd3ePv9oUeQAAAAd/tenor.gif",
+        "https://c.tenor.com/cmNQuKadXqUAAAAd/tenor.gif",
+        "https://c.tenor.com/v6VivIG_8BEAAAAd/tenor.gif",
+        "https://c.tenor.com/hmQKFElzIMQAAAAd/tenor.gif",
+        "https://c.tenor.com/S4c83WORXVEAAAAd/tenor.gif"
+    ];
+
+    function showLoadingGif() {
+        if (gifUrls.length > 0) {
+            const randomIndex = Math.floor(Math.random() * gifUrls.length);
+            loadingGifImage.src = gifUrls[randomIndex];
+            loadingGifContainer.style.display = 'block';
+        }
+    }
+
+    function hideLoadingGif() {
+        loadingGifContainer.style.display = 'none';
+        loadingGifImage.src = ''; // Clear src to stop animation and loading
+    }
+
     let currentJobId = null;
     let pollingInterval = null;
 
@@ -17,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitButton.disabled = true;
         updateStatus('Submitting your request...', 'status-processing');
         resultsList.innerHTML = ''; // Clear previous results
+        hideLoadingGif(); // Ensure GIF is hidden at the start of a new submission
 
         try {
             const response = await fetch('/api/submit', {
@@ -35,12 +63,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             currentJobId = data.job_id;
             updateStatus(`Request submitted! Job ID: ${currentJobId}. Queued...`, 'status-queued');
+            // GIF will be shown by handleJobStatus if status becomes 'processing'
             startPolling();
 
         } catch (error) {
             console.error('Submission error:', error);
             updateStatus(`Error: ${error.message}`, 'status-failed');
             submitButton.disabled = false;
+            hideLoadingGif(); // Hide GIF on submission error
         }
     });
 
@@ -58,10 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const response = await fetch(`/api/status/${currentJobId}`);
                 if (!response.ok) {
-                    // If 404, job might not exist or was cleaned up; stop polling.
                     if (response.status === 404) {
                          updateStatus(`Job ${currentJobId} not found. It might have expired or an error occurred.`, 'status-failed');
-                         stopPollingAndEnableSubmit();
+                         stopPollingAndEnableSubmit(); // This will also hide GIF
                          return;
                     }
                     throw new Error(`Server error: ${response.status}`);
@@ -73,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Polling error:', error);
                 updateStatus(`Error polling status: ${error.message}`, 'status-failed');
+                hideLoadingGif(); // Hide GIF on polling error
                 // Consider stopping polling on persistent errors
                 // stopPollingAndEnableSubmit(); 
             }
@@ -82,21 +112,28 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleJobStatus(job) {
         switch (job.status) {
             case 'queued':
+                hideLoadingGif(); // Not processing yet
                 updateStatus(`Your request is queued... (Job ID: ${job.job_id})`, 'status-queued');
+                resultsList.innerHTML = ''; // Keep results area clear
                 break;
             case 'processing':
                 updateStatus(`Processing your request for "${job.query}"...`, 'status-processing');
+                resultsList.innerHTML = ''; // Clear results area to make space for GIF
+                showLoadingGif();
                 break;
             case 'completed':
+                hideLoadingGif(); // Hide GIF before showing results
                 updateStatus(`Successfully found vibes for "${job.query}"!`, 'status-completed');
                 displayResults(job.result);
                 stopPollingAndEnableSubmit();
                 break;
             case 'failed':
+                hideLoadingGif(); // Hide GIF on failure
                 updateStatus(`Failed to process "${job.query}": ${job.error}`, 'status-failed');
                 stopPollingAndEnableSubmit();
                 break;
             default:
+                hideLoadingGif(); // Hide GIF for any unknown status
                 updateStatus(`Unknown status: ${job.status}`, 'status-failed');
         }
     }
@@ -108,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         currentJobId = null;
         submitButton.disabled = false;
+        hideLoadingGif(); // Ensure GIF is hidden when polling stops
     }
 
     function updateStatus(message, className) {
