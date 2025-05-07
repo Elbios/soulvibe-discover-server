@@ -31,6 +31,28 @@ header h1 {
     margin-bottom: 5px;
 }
 
+/* Styles for the example text block */
+.example-text {
+    background-color: #2c2c2c; /* A distinct but subtle background */
+    padding: 10px 15px;        /* Inner spacing for the block */
+    border-radius: 4px;
+    border-left: 4px solid #1DB954; /* Accent color, matches h1 and button */
+    font-size: 0.9em;          /* Slightly smaller text for the example */
+    color: #c0c0c0;             /* "Example:" prefix text slightly dimmer */
+    /* Inherits text-align: center from header, content will be centered */
+    /* Default paragraph margins will provide spacing around this block */
+}
+
+.example-text .example-code {
+    font-family: Consolas, 'Courier New', monospace; /* Monospace font for code-like text */
+    background-color: #383838; /* Background for the code part itself */
+    padding: 3px 6px;          /* Small padding around the code text */
+    border-radius: 3px;
+    color: #e0e0e0;             /* Example text itself is bright, like normal text */
+    font-weight: bold;         /* Makes the example command stand out */
+    display: inline-block;     /* Ensures padding and background are rendered cleanly */
+}
+
 .search-area {
     display: flex;
     gap: 10px;
