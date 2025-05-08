@@ -10,17 +10,32 @@ import (
 	"time"
 )
 
+// AppConfig struct definition (assuming it exists elsewhere, example for context)
+// type AppConfig struct {
+// 	CliProjectPath string   // No longer used for command execution, but might be in struct
+// 	CliCommandName string
+// 	SlskUsername   string
+// 	SlskPassword   string
+// 	DotnetExePath  string   // No longer used for command execution, but might be in struct
+// 	CliWorkingDir  string
+// 	SpotifyEnvVars []string
+// }
+
+// TrackInfo struct definition (assuming it exists elsewhere, example for context)
+// type TrackInfo struct {
+// 	// ... fields for track information
+// }
+
 func RunCliCommand(config *AppConfig, query string, outputFilePath string, jobID string) ([]TrackInfo, error) {
 	log.Printf("[%s] Starting CLI command for query: %s", jobID, query)
 
-	// Construct the command arguments
-	// /root/.dotnet/dotnet run --project <CSPROJ_PATH> -- soulseek-radar "<QUERY>" --output-json /tmp/job_id.json -u user -p pass
+	// Path to the pre-compiled binary
+	spotseekBinaryPath := "/app/spotseek"
+
+	// Construct the command arguments for the 'spotseek' binary
+	// /app/spotseek <CliCommandName> "<QUERY>" --output-json /tmp/job_id.json -u user -p pass
 	args := []string{
-		"run",
-		"--project",
-		config.CliProjectPath,
-		"--", // Separator for app arguments
-		config.CliCommandName,
+		config.CliCommandName, // This was the command after "--" in the original dotnet run
 		query,
 		"--output-json",
 		outputFilePath,
@@ -30,21 +45,21 @@ func RunCliCommand(config *AppConfig, query string, outputFilePath string, jobID
 		config.SlskPassword,
 	}
 
-	cmd := exec.Command(config.DotnetExePath, args...)
+	cmd := exec.Command(spotseekBinaryPath, args...)
 	cmd.Dir = config.CliWorkingDir // Set working directory
 
 	// Prepare environment variables
 	cmd.Env = os.Environ() // Inherit parent environment
 	cmd.Env = append(cmd.Env, config.SpotifyEnvVars...)
 
-	log.Printf("[%s] Executing: %s %s (in %s)", jobID, config.DotnetExePath, strings.Join(args, " "), config.CliWorkingDir)
+	log.Printf("[%s] Executing: %s %s (in %s)", jobID, spotseekBinaryPath, strings.Join(args, " "), config.CliWorkingDir)
 	log.Printf("[%s] With extra ENV: %v", jobID, config.SpotifyEnvVars)
 
 	// Capture stdout/stderr for logging
 	var outBuilder, errBuilder strings.Builder
 	cmd.Stdout = &outBuilder
 	cmd.Stderr = &errBuilder
-	
+
 	startTime := time.Now()
 	err := cmd.Run()
 	duration := time.Since(startTime)
