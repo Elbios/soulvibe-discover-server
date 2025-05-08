@@ -20,6 +20,10 @@ Before you begin, ensure you have the following:
         * Redirecting the user to Spotify's authorization URL with your Client ID and requested scopes.
         * After user authorization, Spotify will redirect back to your specified `redirect_uri` with an authorization code.
         * Exchange this authorization code (along with your Client ID and Client Secret) for an access token and a refresh token.
+    * you can use this repo to get the refresh token:
+s://github.com/Elbios/spotify-auth-app
+
+# Managing the Server
     * **Note down your Spotify Refresh Token.**
 5.  **Google AI Studio API Key:**
     * Go to [Google AI Studio](https://aistudio.google.com/).
