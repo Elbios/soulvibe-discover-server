@@ -46,13 +46,12 @@ func RunCliCommand(config *AppConfig, query string, outputFilePath string, jobID
 	}
 
 	cmd := exec.Command(spotseekBinaryPath, args...)
-	cmd.Dir = config.CliWorkingDir // Set working directory
 
 	// Prepare environment variables
 	cmd.Env = os.Environ() // Inherit parent environment
 	cmd.Env = append(cmd.Env, config.SpotifyEnvVars...)
 
-	log.Printf("[%s] Executing: %s %s (in %s)", jobID, spotseekBinaryPath, strings.Join(args, " "), config.CliWorkingDir)
+	log.Printf("[%s] Executing: %s %s", jobID, spotseekBinaryPath, strings.Join(args, " "))
 	log.Printf("[%s] With extra ENV: %v", jobID, config.SpotifyEnvVars)
 
 	// Capture stdout/stderr for logging
